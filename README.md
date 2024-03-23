@@ -172,3 +172,8 @@ jika tidak membatasi jumlah thread sistem server, seseorang dapat melakukan DoS 
 Pada program ini, saya mengaplikasikan konsep struktur `threadpool` dan `worker` sesuai pada tutorial https://doc.rust-lang.org/book/ Chapter 20
 
 `threadpool` bekerja dengan membuat sejumlah thread `worker` (workers) saat pool dibuat. Setiap `worker` menunggu tugas melalui sebuah channel. Ketika ada tugas baru, thread pool akan mengirimkannya ke salah satu`worker` melalui channel ini. `Worker` yang menerima tugas akan menjalankannya. Setelah tugas selesai, `worker` kembali menunggu tugas berikutnya dari pool. Ini memungkinkan eksekusi tugas secara paralel tanpa perlu membuat dan menghancurkan thread untuk setiap tugas baru.
+
+<h1>Bonus</h1>
+
+Perbedaan utama antara ```new``` dan ```build``` terletak pada penanganan kasus kosong. ```new``` akan menyebabkan ```panic``` jika sizenya kosong, sementara ```build``` mengembalikan suatu ```result```,
+memungkinkan pemanggil untuk mengelola kesalahan secara sesuai. Jika ukurannya valid, kedua fungsi akan mengembalikan instance ```ThreadPool```. Namun, ```build``` memberikan lebih banyak fleksibilitas dan penanganan kesalahan yang lebih baik.
