@@ -33,3 +33,25 @@ println!("Request: {:#?}", http_request);
 Mencetak vektor `http_request` ke konsol dengan indentasi yang tepat dan baris baru pada setiap elemen vektor sehingga 
 lebih mudah membaca header dari HTTP Request.
 
+## Commit 2
+Sebelumnya `handle_connection` hanya membaca header HTTP request dan mencetaknya pada konsol.
+
+### new `handle_connection`
+![commit2.png](assets%2Fcommit2.png)
+```rust
+let status_line = "HTTP/1.1 200 OK";
+let contents = fs::read_to_string("hello.html").unwrap();
+let length = contents.len();
+
+let response =
+    format!("{status_line}\r\nContent-Length:\
+      {length}\r\n\r\n{contents}");
+       stream.write_all(response.as_bytes()).unwrap();
+```
+Setelah membaca header dari HTTP request, `handle_connection` akan mengembalikan `response` pada client user melalui koneksi TCP, 
+
+yaitu `status_line` berisi HTTP response dengan code status 200 beserta "OK" yang menandakan permintaan berhasil diproses.
+``
+`Content-Length` yang menginformasikan size dari body response kepada client user,
+
+dan yang terakhir `Contents`, static HTML file yaitu `hello.html` yang merupakan body dari HTTP response nya.
