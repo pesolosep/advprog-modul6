@@ -147,4 +147,10 @@ Kode tersebut membaca baris HTTP request dan menentukan respons berdasarkan cond
 Refactoring diperlukan untuk menghilangkan duplikasi kode dan membuat kode lebih mudah dipahami, dikelola, dan diperbaiki di masa mendatang. Dalam kasus ini, ada banyak duplikasi antara blok if dan else di mana keduanya melakukan operasi yang sama, yaitu membaca file dan menulis konten file ke aliran TCP. Satu-satunya perbedaan di antara keduanya adalah status line dan nama file yang digunakan. 
 Dengan memisahkan kode duplikasi diluar blok `if` dan `else`, pembacaan kode menjadi lebih mudah, dan untuk modifikasi kode hanya diperlukan sekali saja dibanding sebelumnya harus modifikasi di kedua blok kode.
 
+## Commit 4
+
+### Slow Simulation
+Pada versi fungsi `handle_connection` yang baru, dibuat respons untuk kasus baru untuk menangani request yang mengandung path /sleep. Terdapat jeda 10 detik sebelum respons diberikan oleh server. Hal ini mensimulasikan suatu request yang memerlukan waktu untuk diproses. Ketika dibuka 2 browser windows, `127.0.0.1/sleep` dan `127.0.0.1` secara berurutan, `127.0.0.1` tidak akan diproses sebelum jeda pada `127.0.0.1/sleep` selesai.
+
+Jika server menerima request yang membutuhkan waktu lama untuk diproses, request berikutnya harus menunggu hingga request yang lama selesai, bahkan jika request baru tersebut bisa diproses dengan cepat. Ini adalah contoh dari _single-threaded server_. Jika server menerima lebih banyak request, eksekusi sekuensial ini akan menjadi tidak optimal.
 
