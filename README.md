@@ -150,7 +150,25 @@ Dengan memisahkan kode duplikasi diluar blok `if` dan `else`, pembacaan kode men
 ## Commit 4
 
 ### Slow Simulation
+
+
+Saat ini, server masih bersistem **single threaded** sehingga akan memproses setiap permintaan secara berurutan, yang berarti tidak akan memproses koneksi kedua sampai koneksi pertama selesai diproses. Jika server menerima permintaan yang membutuhkan waktu lama untuk diproses, permintaan selanjutnya harus menunggu sampai permintaan yang lama selesai diproses, bahkan jika permintaan baru dapat diproses dengan cepat.
+
 Pada versi fungsi `handle_connection` yang baru, dibuat respons untuk kasus baru untuk menangani request yang mengandung path /sleep. Terdapat jeda 10 detik sebelum respons diberikan oleh server. Hal ini mensimulasikan suatu request yang memerlukan waktu untuk diproses. Ketika dibuka 2 browser windows, `127.0.0.1/sleep` dan `127.0.0.1` secara berurutan, `127.0.0.1` tidak akan diproses sebelum jeda pada `127.0.0.1/sleep` selesai.
 
-Jika server menerima request yang membutuhkan waktu lama untuk diproses, request berikutnya harus menunggu hingga request yang lama selesai, bahkan jika request baru tersebut bisa diproses dengan cepat. Ini adalah contoh dari _single-threaded server_. Jika server menerima lebih banyak request, eksekusi sekuensial ini akan menjadi tidak optimal.
 
+
+## Commit 5
+
+### Multithreaded server
+Program sebelumnya yang bersifat **single threaded** akan memproses setiap permintaan secara sekuensial, 
+dengan mengubah sistem ini menjadi **multithreaded**, server dapat menangani beberapa request dari klien secara bersamaan, sehingga meningkatkan kinerja sistem secara keseluruhan. 
+Namun, pengelolaan thread secara manual dapat menjadi rumit, misal  kebocoran sumber daya, kesulitan dalam mengelola siklus hidup thread, dan penurunan kinerja.
+Inilah mengapa **thread pool** diperlukan.
+
+Thread pool adalah sekelompok thread yang telah dibuat dan siap menunggu untuk menangani tugas. Ketika program menerima tugas baru, salah satu thread dalam pool ditugaskan untuk tugas tersebut, dan thread itu akan memproses tugasnya. Thread lainnya dalam pool tersedia untuk menangani tugas lain yang masuk sementara thread pertama sedang memproses. Ketika thread pertama selesai memproses tugasnya, thread tersebut dikembalikan ke pool thread yang menganggur, siap untuk menangani tugas baru.
+jika tidak membatasi jumlah thread sistem server, seseorang dapat melakukan DoS attack dengan membuat misal 10 juta requests pada server kita, oleh karena itu kita harus membatasi jumlah thread dalam pool kita sehingga melindungi server dari serangan yang disebut sebelumnya.
+
+Pada program ini, saya mengaplikasikan konsep struktur `threadpool` dan `worker` sesuai pada tutorial https://doc.rust-lang.org/book/ Chapter 20
+
+`threadpool` bekerja dengan membuat sejumlah thread `worker` (workers) saat pool dibuat. Setiap `worker` menunggu tugas melalui sebuah channel. Ketika ada tugas baru, thread pool akan mengirimkannya ke salah satu`worker` melalui channel ini. `Worker` yang menerima tugas akan menjalankannya. Setelah tugas selesai, `worker` kembali menunggu tugas berikutnya dari pool. Ini memungkinkan eksekusi tugas secara paralel tanpa perlu membuat dan menghancurkan thread untuk setiap tugas baru.
